@@ -1,0 +1,34 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.6</VERSION>
+ <DEVICE>"ATmega16"</DEVICE>
+ <WORKING_DIR>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.1.130\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.1.130\avrasm\inc\m16def.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\Debug\var_delay.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>var_delay.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>var_delay.map</FILE>
+  <FILE>var_delay.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <reset><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>23</LINE></reset>
+  <main_loop><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>49</LINE></main_loop>
+  <var_delay><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>116</LINE></var_delay>
+  <wf1><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>60</LINE></wf1>
+  <update_display_image><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>73</LINE></update_display_image>
+  <clear_DFF><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>65</LINE></clear_DFF>
+  <hextable><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>70</LINE></hextable>
+  <outer_loop><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>121</LINE></outer_loop>
+ </LABELS>
+</ASSEMBLER_INFO>

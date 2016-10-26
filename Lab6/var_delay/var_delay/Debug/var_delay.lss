@@ -1,0 +1,194 @@
+
+AVRASM ver. 2.2.6  C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm Wed Oct 26 03:25:46 2016
+
+C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm(16): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.1.130\avrasm\inc\m16def.inc'
+C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm(16): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.1.130\avrasm\inc\m16def.inc'
+                                 
+                                 
+                                 ;
+                                 ; Created: 10/26/2016 2:00:03 PM
+                                 ; Author : yashj
+                                 ;
+                                 ;input: from the given circuitory, we are getting
+                                 ;a hex value from PD0-PD3 as well as PD7 for the 
+                                 ;flag for the DFF
+                                 ;output: using the hex_2_7_seg subroutine, table 
+                                 ;lookup is implemented to convert hex value from 
+                                 ;the switch bank into its corresponding 7seg value
+                                 ;this value is outputted to PB0-PB7 and the 2 displays
+                                 ;are muxed using PC6-PC7
+                                 
+                                 .list
+                                 
+                                 .def dig0_seg = r0
+                                 .def dig1_seg = r1
+                                 
+                                 .cseg
+                                 reset:
+                                     ;Configure port B as an output port
+000000 ef0f                          ldi r16, $FF        ;load r16 with all 1s
+000001 bb07                          out DDRB, r16       ;port B - all bits configured as outputs
+                                 
+                                     ;Configure port C as an output port
+000002 9aa7                          sbi DDRC, 7			;PINC7 configured as output
+000003 9aa6                          sbi DDRC, 6			;PINC6 configured as output
+                                 
+                                    ;Configure port D as an input/Output port
+000004 e400                          ldi r16, $40        ;load r16 with all 0s
+000005 bb01                          out DDRD, r16       ;port D - all bits configured as inputs except PD6 - output
+000006 e00f                          ldi r16, $0F		;enable pull-up resistors for PD0-PD3 by outputting 1's
+000007 bb02                      	out PORTD, r16		;make sure the DFF output is initially cleared
+000008 e40f                      	ldi r16, $4F        ;output 1 to PD6 to clr' input of DFF
+000009 bb02                      	out PORTD, r16      ;output 01001111, output 1 to clr'
+                                 
+                                     ;Inital delay value
+00000a e041                          ldi r20, 1         ; 32
+                                 
+                                     ;Initialize stack pointer to allow subroutine calls
+00000b e50f                          ldi r16, LOW(RAMEND)    ;load low byte of stack pointer    
+00000c bf0d                          out SPL, r16
+00000d e004                          ldi r16, HIGH(RAMEND)   ;load high byte of stack pointer
+00000e bf0e                          out SPH, r16
+                                 
+                                 main_loop:
+00000f b300                          in r16, PIND        ;input switch values
+000010 700f                          andi r16, $0f       ;force ms nibble to 0
+000011 98ae                      	cbi PORTC, 6        ;turn ON digit 0
+000012 ba08                      	out PORTB, r0		;updated value is in dig 0
+000013 940e 0039                     call var_delay       ;timeout digit ON time
+000015 9aae                      	sbi PORTC, 6
+000016 98af                          cbi PORTC, 7		;turn ON digit 1
+000017 ba18                      	out PORTB, r1		;old value in dig0 is pushed to dig1
+000018 940e 0039                     call var_delay      ;timeout digit OFF time
+00001a 9aaf                      	sbi PORTC, 7
+                                 wf1:
+00001b 9b87                          sbis PIND, 7		;skip to subroutine if PIND7 is set
+00001c cff2                      	rjmp main_loop
+00001d 940e 002a                 	call update_display_image              
+                                  
+                                  clear_DFF:
+00001f 9896                      	cbi PORTD, 6		;Clear flip-flop
+000020 9a96                      	sbi PORTD, 6		;output a 1 to clear'
+000021 cfed                      	rjmp main_loop
+                                     ;Table of segment values to display digits 0 - F
+000022 4f01
+000023 0612
+000024 244c
+000025 0f60
+000026 0c00
+000027 0008
+000028 0131
+000029 3830                      hextable: .db $01, $4F, $12, $06, $4C, $24, $60, $0F, $00, $0C, $08, $00, $31, $01, $30, $38
+                                 
+                                 
+                                 update_display_image:
+00002a b79f                      	in r25, SREG	
+00002b 939f                      	push r25		;push r25 to stack(SREG)
+00002c 932f                      	push r18		;offset for ZH
+00002d 2c10                      	mov dig1_seg, dig0_seg		;move dig0 to dig1
+00002e e0f0                          ldi ZH, high (hextable * 2)    ;set Z to point to start of table
+00002f e4e4                          ldi ZL, low (hextable * 2)
+000030 e020                          ldi r18, $00                ;add offset to Z pointer
+000031 0fe0                          add ZL, r16
+000032 1ff2                          adc ZH, r18
+000033 9104                          lpm r16, Z                  ;load byte from table pointed to by Z
+000034 2e00                      	mov dig0_seg, r16
+000035 912f                      	pop r18			;pop r18 off the stack and restore the previous value
+000036 919f                      	pop r25			;pop r25 off back 
+000037 bf9f                      	out SREG, r25   ;restore r25 to value before subroutine
+000038 9508                          ret				;jump back to read switches again
+                                 
+                                 ;***************************************************************************
+                                 ;*
+                                 ;* "var_delay" - Variable Delay - 0.1 ms increments
+                                 ;*
+                                 ;* Description:
+                                 ;* Delays for a time equal to r16 * 0.1 ms when ATmega16 clocked at 1 MHz
+                                 ;*
+                                 ;* Author: Edward Wang/Yash Jain
+                                 ;* Version: 1.0
+                                 ;* Last updated: 10/26/16
+                                 ;* Target: ATmega16 @ 1 MHz
+                                 ;* Number of words: 
+                                 ;* Number of cycles: ~100 * r16
+                                 ;* Low registers modified: none
+                                 ;* High registers modified: none
+                                 ;*
+                                 ;* Parameters:
+                                 ;* r16 - outer loop control variable
+                                 ;*
+                                 ;* Returns:
+                                 ;* delay of 0.1ms * r16
+                                 ;*
+                                 ;* Notes:
+                                 ;* Delay is designed for ATmega16 with 1 MHz clock
+                                 ;*
+                                 ;***************************************************************************
+                                 var_Delay:
+000039 930f                      	push r16
+00003a b79f                      	in r25, SREG
+00003b 939f                      	push r25
+00003c e119                      	ldi r17, 25
+                                 	outer_loop:
+00003d 951a                      		dec r17
+00003e 0000                      		nop
+00003f f7e9                      		brne outer_loop
+000040 950a                      		dec r16
+000041 f7d9                      		brne outer_loop
+000042 919f                      	pop r25
+000043 bf9f                      	out SREG, r25
+000044 910f                      	pop r16
+
+
+RESOURCE USE INFORMATION
+------------------------
+
+Notice:
+The register and instruction counts are symbol table hit counts,
+and hence implicitly used resources are not counted, eg, the
+'lpm' instruction without operands implicitly uses r0 and z,
+none of which are counted.
+
+x,y,z are separate entities in the symbol table and are
+counted separately from r26..r31 here.
+
+.dseg memory usage only counts static data declared with .byte
+
+"ATmega16" register use summary:
+x  :   0 y  :   0 z  :   1 r0 :   3 r1 :   2 r2 :   0 r3 :   0 r4 :   0 
+r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
+r13:   0 r14:   0 r15:   0 r16:  20 r17:   2 r18:   4 r19:   0 r20:   1 
+r21:   0 r22:   0 r23:   0 r24:   0 r25:   8 r26:   0 r27:   0 r28:   0 
+r29:   0 r30:   2 r31:   2 
+Registers used: 10 out of 35 (28.6%)
+
+"ATmega16" instruction use summary:
+.lds  :   0 .sts  :   0 adc   :   1 add   :   1 adiw  :   0 and   :   0 
+andi  :   1 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
+brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
+brne  :   2 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :   3 cbi   :   3 cbr   :   0 
+clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 
+clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
+cpi   :   0 cpse  :   0 dec   :   2 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   3 inc   :   0 jmp   :   0 
+ld    :   0 ldd   :   0 ldi   :  11 lds   :   0 lpm   :   2 lsl   :   0 
+lsr   :   0 mov   :   2 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
+neg   :   0 nop   :   1 or    :   0 ori   :   0 out   :  10 pop   :   4 
+push  :   4 rcall :   0 ret   :   2 reti  :   0 rjmp  :   2 rol   :   0 
+ror   :   0 sbc   :   0 sbci  :   0 sbi   :   5 sbic  :   0 sbis  :   1 
+sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
+sei   :   0 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
+sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   0 
+sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
+Instructions used: 19 out of 113 (16.8%)
+
+"ATmega16" memory use summary [bytes]:
+Segment   Begin    End      Code   Data   Used    Size   Use%
+---------------------------------------------------------------
+[.cseg] 0x000000 0x00008c    124     16    140   16384   0.9%
+[.dseg] 0x000060 0x000060      0      0      0    1024   0.0%
+[.eseg] 0x000000 0x000000      0      0      0     512   0.0%
+
+Assembly complete, 0 errors, 0 warnings
