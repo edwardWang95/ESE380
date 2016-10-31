@@ -29,6 +29,6 @@
   <update_display_image><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>73</LINE></update_display_image>
   <clear_DFF><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>65</LINE></clear_DFF>
   <hextable><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>70</LINE></hextable>
-  <outer_loop><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>121</LINE></outer_loop>
+  <outer_loop><FILE>C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm</FILE><LINE>118</LINE></outer_loop>
  </LABELS>
 </ASSEMBLER_INFO>

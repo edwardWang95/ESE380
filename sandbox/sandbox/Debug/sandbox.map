@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.6  C:\Users\edwar\Desktop\380\sandbox\sandbox\main.asm Wed Oct 26 03:05:15 2016
+AVRASM ver. 2.2.6  C:\Users\edwar\Desktop\380\sandbox\sandbox\main.asm Wed Oct 26 04:24:26 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -607,4 +607,4 @@ EQU  INT_VECTORS_SIZE 0000002a
 CSEG init         00000000
 CSEG start        00000004
 CSEG var_delay    00000008
-CSEG outer_loop   0000000c
+CSEG outer_loop   00000009

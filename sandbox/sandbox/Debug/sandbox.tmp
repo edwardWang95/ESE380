@@ -25,6 +25,6 @@
   <init><FILE>C:\Users\edwar\Desktop\380\sandbox\sandbox\main.asm</FILE><LINE>15</LINE></init>
   <start><FILE>C:\Users\edwar\Desktop\380\sandbox\sandbox\main.asm</FILE><LINE>22</LINE></start>
   <var_delay><FILE>C:\Users\edwar\Desktop\380\sandbox\sandbox\main.asm</FILE><LINE>27</LINE></var_delay>
-  <outer_loop><FILE>C:\Users\edwar\Desktop\380\sandbox\sandbox\main.asm</FILE><LINE>32</LINE></outer_loop>
+  <outer_loop><FILE>C:\Users\edwar\Desktop\380\sandbox\sandbox\main.asm</FILE><LINE>29</LINE></outer_loop>
  </LABELS>
 </ASSEMBLER_INFO>

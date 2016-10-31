@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.6  C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm Wed Oct 26 03:25:46 2016
+AVRASM ver. 2.2.6  C:\Users\edwar\Desktop\380\Lab6\var_delay\var_delay\main.asm Wed Oct 26 04:21:57 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -613,4 +613,4 @@ CSEG wf1          0000001b
 CSEG update_display_image 0000002a
 CSEG clear_DFF    0000001f
 CSEG hextable     00000022
-CSEG outer_loop   0000003d
+CSEG outer_loop   0000003a

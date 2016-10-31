@@ -25,17 +25,11 @@ start:
 	rjmp start
 
 var_Delay:
-	push r16
-	in r25, SREG
-	push r25
 	ldi r17, 25
 	outer_loop:
 		dec r17
 		nop
 		brne outer_loop
 		dec r16
-		brne outer_loop
-	pop r25
-	out SREG, r25
-	pop r16
+		brne var_delay
 	ret

@@ -1,3 +1,4 @@
+;
 ; update_display_image.asm
 ;
 ; Created: 10/26/2016 2:00:03 PM
@@ -51,11 +52,11 @@ main_loop:
     andi r16, $0f       ;force ms nibble to 0
 	cbi PORTC, 6        ;turn ON digit 0
 	out PORTB, r0		;updated value is in dig 0
-    call var_delay       ;timeout digit ON time
+    call on_delay       ;timeout digit ON time
 	sbi PORTC, 6
     cbi PORTC, 7		;turn ON digit 1
 	out PORTB, r1		;old value in dig0 is pushed to dig1
-    call var_delay      ;timeout digit OFF time
+    call off_delay      ;timeout digit OFF time
 	sbi PORTC, 7
 wf1:
     sbis PIND, 7		;skip to subroutine if PIND7 is set
@@ -69,6 +70,49 @@ wf1:
     ;Table of segment values to display digits 0 - F
 hextable: .db $01, $4F, $12, $06, $4C, $24, $60, $0F, $00, $0C, $08, $00, $31, $01, $30, $38
 
+on_delay:   ;delay for ATmega16 @ 1MHz
+off_delay:
+    mov r17, r20		; load outer loop count
+outer_loop:
+    ldi r16, 1         ; 40 inner loop is about 123 us (called twice per period)
+inner_loop:
+    dec r16
+    brne inner_loop
+    dec r17
+    brne outer_loop
+    ret
+
+;***************************************************************************
+;*
+;* "update_display_image" - Update Display Image
+;*
+;* Description:
+;* Copies the image of the segment pattern for dig0 stored in r0 (dig0_seg)
+;* to the image of the segment pattern for dig1 stored in r1 (dig1_seg).
+;* Then copies the segment pattern in r16 to r0. This effectively, shifts
+;* what is displayed one digit to the left when the multiplexed display is
+;* updated.
+;*
+;* Author: “authors’ names”
+;* Version: 0.0
+;* Last updated: 10/09/16
+;* Target:
+;* Number of words:
+;* Number of cycles:
+;* Low registers modified: r0, r1 - new segment patterns for dig0 and dig1
+;* High registers modified: none
+;*
+;* Parameters:
+;* r16 - new segment pattern for dig0
+;*
+;* Returns:
+;* r0, r1 - updated with new segment patterns for dig0 and dig1
+;*
+;* Notes:
+;* Uses def and undef directives to provide aliases for r0 and r1
+;* .def dig0_seg = r0;image of segment pattern for digit 0
+;* .def dig1_seg = r1;image of segment pattern for digit 1
+;***************************************************************************
 
 update_display_image:
 	in r25, SREG	
@@ -89,36 +133,69 @@ update_display_image:
 
 ;***************************************************************************
 ;*
-;* "var_delay" - Variable Delay - 0.1 ms increments
-;*
-;* Description:
-;* Delays for a time equal to r16 * 0.1 ms when ATmega16 clocked at 1 MHz
-;*
+;* Title: Modular Program
 ;* Author: Edward Wang/Yash Jain
 ;* Version: 1.0
-;* Last updated: 10/26/16
-;* Target: ATmega16 @ 1 MHz
-;* Number of words: 
-;* Number of cycles: ~100 * r16
-;* Low registers modified: none
-;* High registers modified: none
+;* Last updated: 10/26/15
+;* Target: ATmega16
 ;*
-;* Parameters:
-;* r16 - outer loop control variable
+;* DESCRIPTION
+;* This system inputs a hex code from a 4-position DIP switch each time a
+;* pushbutton is pressed. The hex digit previously displayed on the right
+;* digit of a two-digit seven-segment display is displayed the left digit of
+;* the display. The newly entered hex value is displayed on the right digit.
 ;*
-;* Returns:
-;* delay of 0.1ms * r16
+;* Ports:
+;* PortB:
+;* PB6 - PB0 outputs, segments a through g of common anode seven-seg display
 ;*
-;* Notes:
-;* Delay is designed for ATmega16 with 1 MHz clock
+;* PortC:
+;* PC7 output, digit driver 1 control
+;* PC6 output, digit driver 0 control
+;* PC5 - PC2 JTAG interface, do not modify (IMPORTANT)
 ;*
+;* PortD:
+;* PD7 input, Q output data valid flag flip-flop
+;* PD6 output, /CLR data valid flag flip-flop
+;* PD3 - PD0 input, from 4-position DIP switch
+;*
+;* VERSION HISTORY
+;* 1.0 Original version
 ;***************************************************************************
-var_Delay:
-	ldi r17, 25
-	outer_loop:
-		dec r17
-		nop
-		brne outer_loop
-		dec r16
-		brne outer_loop
-	ret
+modular_prog:
+	in r25, SREG
+	push r25
+	push r16		;push curr value of r16
+	sbis PIND, 7	;wait for button press
+	rjmp modular_prog
+	in r16, PIND
+	andi r16, $0F	;get lower nibble from switch bank
+	ldi ZL, LOW(hextable*2)
+	ldi ZH, HIGH(hextable*2)
+	ldi r18, $00	
+	add ZL, r16		;add offset
+	adc ZH, r18
+	lpm r16, Z		;get new value of r16
+	pop r17		;push previous value to r17
+	lsl r17			;shift r17 to msb
+	lsl r17
+	lsl r17
+	lsl r17
+	pop r25		;restore SREG value
+	out SREG, r25
+
+	;display dig0
+	out PORTB, r16
+	sbi PORTC, 6
+	call var_delay
+	cbi PORTC, 6
+	;display dig1
+	out PORTB, r17
+	sbi PORTC, 7
+	call var_delay
+	cbi PORTC, 7
+
+	;clear DFF
+	cbi PIND, 6
+	sbi PIND, 6
+ret
